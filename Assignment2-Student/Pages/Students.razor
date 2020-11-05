@@ -1,0 +1,106 @@
+@page "/students"
+@inject HttpClient httpClient
+
+<h1>Students</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (students == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class='table table-hover'>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>BCIT ID</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>City</th>
+                <th>Option</th>
+                <th>Set</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in students)
+            {
+                <tr>
+                    <td>@item.StudentId</td>
+                    <td>@item.FirstName</td>
+                    <td>@item.LastName</td>
+                    <td>@item.BCIT_ID </td>
+                    <td>@item.Email </td>
+                    <td>@item.MobileNumber</td>
+                    <td>@item.City </td>
+                    <td>@item.Option</td>
+                    <td>@item.Set</td>
+
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (students != null) // Insert form
+{
+<EditForm Model="@student" OnValidSubmit="@HandleAdd">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputText placeholder="First Name" id="firstName" @bind-Value="@student.FirstName" />
+    <br />
+    <InputText placeholder="Last Name" id="lastName" @bind-Value="@student.LastName" />
+    <br />
+    <InputText placeholder="School" id="school" @bind-Value="@student.BCIT_ID" />
+    <br />
+    <InputText placeholder="School" id="school" @bind-Value="@student.Email" />
+    <br />
+    <InputText placeholder="School" id="school" @bind-Value="@student.MobileNumber" />
+    <br />
+    <InputText placeholder="School" id="school" @bind-Value="@student.Option" />
+    <br />
+    <InputText placeholder="School" id="school" @bind-Value="@student.Set" />
+    <br />
+    <InputText placeholder="School" id="school" @bind-Value="@student.City" />
+    <br />
+    <button type="submit">Submit</button>
+</EditForm>
+
+    @code {
+        private Student student = new Student();
+
+        private async void HandleAdd()
+        {
+            string endpoint = $"{baseUrl}api/students";
+
+            student.StudentId = Guid.NewGuid().ToString();
+
+            await httpClient.PostAsJsonAsync(endpoint, student);
+
+            await load();
+            StateHasChanged(); // causes the page to get automatically refreshed
+        }
+    }
+}
+
+
+@code {
+    Student[] students;
+    string baseUrl = "https://localhost:44396/";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await load();
+    }
+
+    protected async Task load()
+    {
+        students = await httpClient.GetFromJsonAsync<Student[]>($"{baseUrl}api/students");
+    }
+}
