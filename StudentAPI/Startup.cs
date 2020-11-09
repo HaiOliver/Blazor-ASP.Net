@@ -28,8 +28,17 @@ namespace StudentAPI
         public void ConfigureServices(IServiceCollection services)
         {
             // connect sql server
-            services.AddDbContext<StudentDBContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+           /*  services.AddDbContext<StudentDBContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))); */
+
+            var host = Configuration["DBHOST"] ?? "localhost";
+                        var port = Configuration["DBPORT"] ?? "1433";
+                        var password = Configuration["DBPASSWORD"] ?? "SqlExpress!";
+
+                        string connStr = $"Server=tcp:{host},{port};Database=qqqqqqaaa4124;UID=sa;PWD={password};";
+
+            services.AddDbContext<StudentDBContext>(options => options.UseSqlServer(connStr));
+            
             // Add Cors
             services.AddCors(o => o.AddPolicy("Policy", builder => {
                 builder.AllowAnyOrigin()
@@ -41,7 +50,7 @@ namespace StudentAPI
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, StudentDBContext context)
         {
             if (env.IsDevelopment())
             {
@@ -59,6 +68,8 @@ namespace StudentAPI
             {
                 endpoints.MapControllers();
             });
+
+            context.Database.Migrate();
         }
     }
 }
